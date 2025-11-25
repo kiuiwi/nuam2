@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<br><br>
+<div class="Form">
+    <h2>Editar Registro</h2>
+    <hr><br>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <h3>Datos de Usuario</h3>
+        {{ usuario_form.as_p }}
+
+        <h3>Datos de Persona</h3>
+        {{ persona_form.as_p }}
+        
+        <br>
+        <button class="btn" type="submit">Guardar Cambios</button>
+    </form>
+    <br>
+    <a href="{% url 'lista_registros' %}">Volver a la lista</a>
+    <br><br>
+</div>
+{% endblock %}

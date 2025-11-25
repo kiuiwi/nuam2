@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Editar Documento</h1>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Guardar cambios</button>
+</form>
+
+<a href="{% url 'lista_documentos' %}">Volver al listado</a>
+{% endblock %}

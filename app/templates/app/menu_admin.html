@@ -1,0 +1,62 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Inicio Admin | NUAM</title>
+  <link rel="stylesheet" href="{% static 'app/styles.css' %}">
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div style="text-align:center; margin-bottom: 20px;">
+      <img src="{% static 'app/nuam_HD.png' %}" style="height: 40px;">
+    </div>
+
+    <h1 style="text-align:center;">Menú Administrador</h1>
+
+    <div class="Form">
+      <h3>Opciones del sistema:</h3>
+      <hr>
+      <div class="menu">
+
+        <a href="{% url 'lista_registros' %}" class="btn">Gestión Usuarios</a>
+        <a href="{% url 'lista_documentos' %}" class="btn">Gestión Documentos</a>
+        <br>
+        <a href="/admin/" class="btn">Panel Django Admin</a>
+
+        <a href="{% url 'lista_logs' %}" class="btn">Logs Pulsar</a>
+        <a href="/api/logs" class="btn">Logs</a>
+        <br>
+        <a href="/swagger/" class="btn">Swagger UI</a>
+        <a href="/api/usuarios/" class="btn">Endpoints Usuarios</a>
+        <a href="/api/personas/" class="btn">Endpoints Personas</a>
+        <a href="/api/documentos/" class="btn">Endpoints Documentos</a>
+
+        <br>
+        <a href="{% url 'logout' %}" class="btn">Cerrar sesión</a>
+      </div>
+    </div>
+
+    <br>
+
+    <div class="Form">
+        <h3>Indicadores Económicos</h3>
+        <hr>
+
+        <p><strong>TPM:</strong> {{ tpm_actual|default:"No disponible" }}</p>
+        <p><strong>CLP → PEN:</strong> {{ tc_clp_pen|default:"No disponible" }}</p>
+        <p><strong>CLP → COP:</strong> {{ tc_clp_cop|default:"No disponible" }}</p>
+
+        {% if error_api %}
+            <p style="color:red;"><strong>{{ error_api }}</strong></p>
+        {% endif %}
+    </div>
+
+  </div>
+
+</body>
+</html>

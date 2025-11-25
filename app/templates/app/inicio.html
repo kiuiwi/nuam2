@@ -5,25 +5,61 @@
   <meta charset="UTF-8">
   <title>Inicio | NUAM</title>
   <link rel="stylesheet" href="{% static 'app/styles.css' %}">
-  <link rel="icon" type="image" href="{% static 'app/nuam_HD2.png' %}">
 </head>
+
 <body>
-  <img src="{% static 'app/nuam_HD.png' %}" style="height: 30px;">
+
   <div class="container">
-    <h1 class="titulo">Bienvenido a NUAM</h1>
+
+
+    <div style="text-align:center; margin-bottom: 20px;">
+      <img src="{% static 'app/nuam_HD.png' %}" style="height: 40px;">
+    </div>
+
+
+    <h1 class="titulo" style="text-align:center;">Bienvenido a NUAM</h1>
+
+
     <div class="Form">
-      <h3>Selecciona una sección:</h3>
+  <h3>Selecciona una opción:</h3>
+  <hr>
+  <div class="menu" style="text-align:center;">
+    <a href="{% url 'login' %}" class="btn">Iniciar sesión</a>
+  </div>
+</div>
+
+
+    <br>
+
+
+    {% if error_api %}
+      <p style="color:red; text-align:center;"><strong>{{ error_api }}</strong></p>
+    {% endif %}
+
+
+ 
+    <!--Indicadores Economicos-->
+    <div class="Form">
+      <h3>Indicadores Económicos (API Mindicador)</h3>
       <hr>
-      <div class="menu">
-        <a href="{% url 'lista_usuarios' %}" class="btn">Gestión Usuarios</a>
-        <a href="{% url 'lista_documentos' %}" class="btn">Gestión Documentos</a>
-        <a href="/admin/" class="btn">Admin</a>
-      </div>
-      <br>
+
+      <p><strong>TPM:</strong>
+        {% if tpm_actual %} {{ tpm_actual }}% {% else %} No disponible {% endif %}
+      </p>
+
+      <p><strong>CLP → PEN:</strong>
+        {% if tc_clp_pen %} {{ tc_clp_pen }} {% else %} No disponible {% endif %}
+      </p>
+
+      <p><strong>CLP → COP:</strong>
+        {% if tc_clp_cop %} {{ tc_clp_cop }} {% else %} No disponible {% endif %}
+      </p>
+
     </div>
 
     <br><br>
 
   </div>
+
 </body>
 </html>

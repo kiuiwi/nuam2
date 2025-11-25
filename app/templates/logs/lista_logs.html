@@ -1,0 +1,85 @@
+<h2>Eventos del sistema</h2>
+
+<style>
+    .log-row {
+        font-size: 18px;
+    }
+    .green { color: green; font-weight: bold; }
+    .orange { color: orange; font-weight: bold; }
+    .red { color: red; font-weight: bold; }
+    .gray { color: gray; font-weight: bold; }
+</style>
+
+<table id="logsTable" border="1" cellpadding="8">
+    <tr>
+        <th>Fecha</th>
+        <th>Tipo</th>
+        <th>Mensaje</th>
+    </tr>
+
+    {% for log in logs %}
+    <tr class="log-row">
+        <td>{{ log.fecha|date:"d/m/Y H:i:s" }}</td>
+        <td class="{{ log.get_color }}">{{ log.get_icon }} {{ log.tipo }}</td>
+        <td>{{ log.mensaje }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<script>
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleString("es-CL", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+}
+
+function cargarLogs() {
+    fetch("/api/logs/")
+        .then(res => res.json())
+        .then(data => {
+            const table = document.getElementById("logsTable");
+
+            let html = `
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Mensaje</th>
+                </tr>
+            `;
+
+            data.forEach(log => {
+                let color = "gray";
+                let icon = "⚪";
+                const msg = log.mensaje.toLowerCase();
+
+                if (msg.includes("creado")) { color = "green"; icon = "🟢"; }
+                else if (msg.includes("editado")) { color = "orange"; icon = "🟠"; }
+                else if (msg.includes("eliminado")) { color = "red"; icon = "🔴"; }
+                else if (msg.includes("inicio") || msg.includes("login")) {
+                    color = "green"; icon = "🟢";
+                } 
+                else if (msg.includes("cierre") || msg.includes("logout")) {
+                    color = "gray"; icon = "⚪";
+                }
+
+                html += `
+                    <tr class="log-row">
+                        <td>${formatDate(log.fecha)}</td>
+                        <td class="${color}">${icon} ${log.tipo}</td>
+                        <td>${log.mensaje}</td>
+                    </tr>
+                `;
+            });
+
+            table.innerHTML = html;
+        });
+}
+
+// Refrescar cada 3 segundos
+setInterval(cargarLogs, 3000);
+</script>

@@ -2,18 +2,32 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+
+    # HOME
     path('', views.inicio, name='inicio'),
 
+    # USUARIO + PERSONA
+    path('registros/', views.lista_registros, name='lista_registros'),
+    path('registros/nuevo/', views.crear_registro, name='crear_registro'),
+    path('registros/<int:usuario_id>/editar/', views.editar_registro, name='editar_registro'),
+    path('registros/<int:usuario_id>/eliminar/', views.eliminar_registro, name='eliminar_registro'),
 
-    # Usuarios
-    path('usuarios/', views.lista_usuarios, name='lista_usuarios'),
-    path('usuarios/nuevo/', views.crear_usuario, name='crear_usuario'),
-    path('usuarios/<int:pk>/editar/', views.editar_usuario, name='editar_usuario'),
-    path('usuarios/<int:pk>/eliminar/', views.eliminar_usuario, name='eliminar_usuario'),
-
-    # Documentos
+    # DOCUMENTOS
     path('documentos/', views.lista_documentos, name='lista_documentos'),
     path('documentos/nuevo/', views.crear_documento, name='crear_documento'),
-    path('documentos/<int:pk>/editar/', views.editar_documento, name='editar_documento'),
-    path('documentos/<int:pk>/eliminar/', views.eliminar_documento, name='eliminar_documento'),
+    path('documentos/<int:documento_id>/editar/', views.editar_documento, name='editar_documento'),
+    path('documentos/<int:documento_id>/eliminar/', views.eliminar_documento, name='eliminar_documento'),
+
+    # LOGS
+    path('logs/', views.lista_logs, name='lista_logs'),
+
+
+
+
+
+    # AUTENTICACIÓN
+    path('login/', views.login_view, name='login'),
+    path('menu_usuario/', views.menu_usuario, name='menu_usuario'),
+    path('menu_admin/', views.menu_admin, name='menu_admin'),
+    path('logout/', views.logout_view, name='logout'),
 ]

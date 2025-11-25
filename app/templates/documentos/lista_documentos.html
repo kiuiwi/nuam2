@@ -3,7 +3,28 @@
 <h2>Listado de Documentos</h2>
 
 <div class="Form">
+
     <a href="{% url 'crear_documento' %}">crear nuevo documento</a>
+
+    <br><br>
+
+    <!-- 🔎 BUSCADOR -->
+    <form method="get">
+        <input type="text" name="q" placeholder="Buscar..." value="{{ query }}">
+        
+        <select name="tipo">
+            <option value="">-- Tipo --</option>
+            <option value="pdf" {% if tipo == "pdf" %}selected{% endif %}>PDF</option>
+            <option value="word" {% if tipo == "word" %}selected{% endif %}>Word</option>
+            <option value="excel" {% if tipo == "excel" %}selected{% endif %}>Excel</option>
+            <option value="imagen" {% if tipo == "imagen" %}selected{% endif %}>Imagen</option>
+        </select>
+
+        <button type="submit">Buscar</button>
+    </form>
+
+    <br>
+
     <table border="1" cellpadding="5">
         <tr>
             <th>ID</th>
@@ -14,6 +35,7 @@
             <th>Fecha Ingreso</th>
             <th>Acciones</th>
         </tr>
+
         {% for doc in documentos %}
         <tr>
             <td>{{ doc.id_documento }}</td>
@@ -35,7 +57,5 @@
         </tr>
         {% endfor %}
     </table>
-    {% endblock %}
 
-
-</div>
+{% endblock %}

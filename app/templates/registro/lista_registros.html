@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Listado de Usuarios</h1>
+
+<a href="{% url 'crear_registro' %}">Crear nuevo registro</a>
+
+<table border="1">
+    <tr>
+        <th>Usuario</th>
+        <th>Nombre Completo</th>
+        <th>Correo</th>
+        <th>Acciones</th>
+    </tr>
+
+    {% for persona in personas %}
+    <tr>
+        <td>{{ persona.usuario.nombre_usuario }}</td>
+        <td>{{ persona.nombres }} {{ persona.apellidos }}</td>
+        <td>{{ persona.email }}</td>
+        <td>
+            <a href="{% url 'editar_registro' persona.usuario.id_usuario %}">Editar</a>
+            |
+            <a href="{% url 'eliminar_registro' persona.usuario.id_usuario %}">Eliminar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+{% endblock %}
+

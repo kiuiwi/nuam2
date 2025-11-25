@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class UsuarioTipo(models.Model):
     id_usuario_tipo = models.AutoField(primary_key=True, db_column='ID_USUARIO_TIPO')
     usuario_tipo = models.CharField(max_length=30, blank=True, db_column='USUARIO_TIPO')
@@ -12,7 +11,6 @@ class UsuarioTipo(models.Model):
     class Meta:
         verbose_name = 'Tipo de Usuario'
         verbose_name_plural = 'Tipos de Usuario'
-
 
 
 class Pais(models.Model):
@@ -27,7 +25,6 @@ class Pais(models.Model):
         verbose_name_plural = 'Países'
 
 
-
 class Region(models.Model):
     id_region = models.AutoField(primary_key=True, db_column='ID_REGION')
     region = models.CharField(max_length=50, blank=True, db_column='REGION')
@@ -40,27 +37,55 @@ class Region(models.Model):
         verbose_name_plural = 'Regiones'
 
 
-
+# --------------------------------------------------------
+# NUEVA TABLA USUARIOS (autenticación)
+# --------------------------------------------------------
 class Usuario(models.Model):
     id_usuario = models.AutoField(primary_key=True, db_column='ID_USUARIO')
-    usuario_tipo = models.ForeignKey(UsuarioTipo, on_delete=models.SET_NULL, null=True, blank=True, db_column='ID_USUARIO_TIPO')
-    pais = models.ForeignKey(Pais, on_delete=models.SET_NULL, null=True, blank=True, db_column='ID_PAIS')
-    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True, db_column='ID_REGION')
-    usuario_nombre = models.CharField(max_length=50, blank=True, db_column='USUARIO_NOMBRE')
-    usuario_apellido = models.CharField(max_length=50, blank=True, db_column='USUARIO_APELLIDO')
-    telefono = models.CharField(max_length=20, blank=True, db_column='TELEFONO')
-    email = models.EmailField(blank=True, db_column='EMAIL')
-    direccion = models.CharField(max_length=100, blank=True, db_column='DIRECCION')
+    usuario_tipo = models.ForeignKey(
+        UsuarioTipo,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column='ID_USUARIO_TIPO'
+    )
+    nombre_usuario = models.CharField(max_length=50, db_column='NOMBRE_USUARIO')
+    contrasena = models.CharField(max_length=100, null=True, blank=True)
+ # En producción se debe encriptar
 
     def __str__(self):
-        nombre = f"{self.usuario_nombre} {self.usuario_apellido}".strip()
-        return nombre or f"Usuario {self.id_usuario}"
+        return self.nombre_usuario
 
     class Meta:
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'
 
 
+# --------------------------------------------------------
+# NUEVA TABLA PERSONAS (datos personales)
+# --------------------------------------------------------
+class Persona(models.Model):
+    id_persona = models.AutoField(primary_key=True, db_column='ID_PERSONA')
+    usuario = models.OneToOneField(
+        Usuario,
+        on_delete=models.CASCADE,
+        db_column='ID_USUARIO'
+    )
+    pais = models.ForeignKey(Pais, on_delete=models.SET_NULL, null=True, blank=True, db_column='ID_PAIS')
+    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True, db_column='ID_REGION')
+    nombres = models.CharField(max_length=50, db_column='NOMBRES', blank=True)
+    apellidos = models.CharField(max_length=50, db_column='APELLIDOS', blank=True)
+    telefono = models.CharField(max_length=20, db_column='TELEFONO', blank=True)
+    email = models.EmailField(db_column='EMAIL', blank=True)
+    direccion = models.CharField(max_length=100, db_column='DIRECCION', blank=True)
+
+    def __str__(self):
+        nombre = f"{self.nombres} {self.apellidos}".strip()
+        return nombre or f"Persona {self.id_persona}"
+
+    class Meta:
+        verbose_name = 'Persona'
+        verbose_name_plural = 'Personas'
 
 
 class DocumentoTipo(models.Model):
@@ -75,8 +100,6 @@ class DocumentoTipo(models.Model):
         verbose_name_plural = 'Tipos de Documento'
 
 
-
-
 class Documento(models.Model):
     id_documento = models.AutoField(primary_key=True, db_column='ID_DOCUMENTO')
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='ID_USUARIO')
@@ -86,8 +109,31 @@ class Documento(models.Model):
     fecha_ingreso = models.DateTimeField(auto_now_add=True, db_column='FECHA_INGRESO')
 
     def __str__(self):
-        return self.documento_nombre or "Documento sin título"
+        return self.documento_nombre or f"Documento {self.id_documento}"
 
-    class Meta:
-        verbose_name = 'Documento'
-        verbose_name_plural = 'Documentos'
+
+
+
+class EventoLog(models.Model):
+    fecha = models.DateTimeField(auto_now_add=True)
+    tipo = models.CharField(max_length=20)
+    mensaje = models.TextField()
+
+
+    def get_color(self):
+        if "creado" in self.mensaje.lower():
+            return "green"
+        if "editado" in self.mensaje.lower():
+            return "orange"
+        if "eliminado" in self.mensaje.lower():
+            return "red"
+        return "gray"
+
+    def get_icon(self):
+        if "creado" in self.mensaje.lower():
+            return "🟢"
+        if "editado" in self.mensaje.lower():
+            return "🟠"
+        if "eliminado" in self.mensaje.lower():
+            return "🔴"
+        return "⚪"

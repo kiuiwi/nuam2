@@ -1,0 +1,58 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | NUAM</title>
+  <link rel="stylesheet" href="{% static 'app/styles.css' %}">
+</head>
+
+<body>
+  <div class="container">
+
+    <div style="text-align:center; margin-bottom: 20px;">
+      <img src="{% static 'app/nuam_HD.png' %}" style="height: 50px;">
+    </div>
+
+    <h2 style="text-align:center;">Iniciar Sesión</h2>
+
+    {% if error %}
+      <p style="color:red; text-align:center;"><strong>{{ error }}</strong></p>
+    {% endif %}
+
+    <div class="Form">
+      <form method="POST">
+            {% csrf_token %}
+
+            <label>Correo o usuario:</label>
+            <input type="text" name="login" required>
+
+            <br><br>
+            <label>Contraseña:</label>
+            <input type="password" name="password" required>
+
+            <br><br>
+
+            <button type="submit">Ingresar</button>
+
+            {% if error %}
+                <p style="color:red">{{ error }}</p>
+            {% endif %}
+        </form>
+
+    </div>
+
+    <br><br>
+
+    <div class="Form">
+      <h3>Indicadores Económicos</h3>
+      <hr>
+      <p><strong>TPM:</strong> {{ tpm_actual|default:"No disponible" }}</p>
+      <p><strong>CLP → PEN:</strong> {{ tc_clp_pen|default:"No disponible" }}</p>
+      <p><strong>CLP → COP:</strong> {{ tc_clp_cop|default:"No disponible" }}</p>
+    </div>
+
+  </div>
+</body>
+</html>

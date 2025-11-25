@@ -1,8 +1,12 @@
 from django.contrib import admin
-from .models import UsuarioTipo, Pais, Region, Usuario, DocumentoTipo, Documento
+from .models import (
+    UsuarioTipo, Pais, Region,
+    Usuario, Persona,
+    DocumentoTipo, Documento
+)
 
 
-
+# ADMIN UsuarioTipo
 @admin.register(UsuarioTipo)
 class UsuarioTipoAdmin(admin.ModelAdmin):
     list_display = ('id_usuario_tipo', 'usuario_tipo')
@@ -11,6 +15,7 @@ class UsuarioTipoAdmin(admin.ModelAdmin):
 
 
 
+# ADMIN Pais
 @admin.register(Pais)
 class PaisAdmin(admin.ModelAdmin):
     list_display = ('id_pais', 'pais')
@@ -19,6 +24,7 @@ class PaisAdmin(admin.ModelAdmin):
 
 
 
+# ADMIN Region
 @admin.register(Region)
 class RegionAdmin(admin.ModelAdmin):
     list_display = ('id_region', 'region')
@@ -27,29 +33,42 @@ class RegionAdmin(admin.ModelAdmin):
 
 
 
+# ADMIN Usuario
 @admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):
+    list_display = ('id_usuario', 'nombre_usuario', 'get_usuario_tipo')
+    search_fields = ('nombre_usuario', 'usuario_tipo__usuario_tipo')
+    list_filter = ('usuario_tipo',)
+    ordering = ('nombre_usuario',)
+
+    def get_usuario_tipo(self, obj):
+        return obj.usuario_tipo.usuario_tipo if obj.usuario_tipo else ""
+    get_usuario_tipo.short_description = "Tipo de Usuario"
+
+
+
+# ADMIN Persona
+@admin.register(Persona)
+class PersonaAdmin(admin.ModelAdmin):
     list_display = (
-        'id_usuario',
-        'usuario_nombre',
-        'usuario_apellido',
+        'id_persona',
+        'usuario',
+        'nombres',
+        'apellidos',
         'telefono',
         'email',
         'direccion',
         'get_region',
         'get_pais',
-        'get_usuario_tipo',
     )
     search_fields = (
-        'usuario_nombre',
-        'usuario_apellido',
-        'usuario_tipo__usuario_tipo',
-        'region__region',
-        'pais__pais',
+        'nombres',
+        'apellidos',
+        'email',
+        'usuario__nombre_usuario',
     )
-    list_filter = ('usuario_tipo', 'pais', 'region')
-    ordering = ('usuario_nombre',)
-
+    list_filter = ('pais', 'region')
+    ordering = ('nombres',)
 
     def get_region(self, obj):
         return obj.region.region if obj.region else ''
@@ -59,13 +78,9 @@ class UsuarioAdmin(admin.ModelAdmin):
         return obj.pais.pais if obj.pais else ''
     get_pais.short_description = 'País'
 
-    def get_usuario_tipo(self, obj):
-        return obj.usuario_tipo.usuario_tipo if obj.usuario_tipo else ''
-    get_usuario_tipo.short_description = 'Tipo de Usuario'
 
 
-
-
+# ADMIN DocumentoTipo
 @admin.register(DocumentoTipo)
 class DocumentoTipoAdmin(admin.ModelAdmin):
     list_display = ('id_documento_tipo', 'documento_tipo')
@@ -74,9 +89,19 @@ class DocumentoTipoAdmin(admin.ModelAdmin):
 
 
 
+# ADMIN Documento
 @admin.register(Documento)
 class DocumentoAdmin(admin.ModelAdmin):
-    list_display = ('id_documento', 'documento_nombre', 'usuario', 'documento_tipo', 'fecha_ingreso')
-    search_fields = ('documento_nombre', 'usuario__usuario_nombre', 'usuario__usuario_apellido')
+    list_display = (
+        'id_documento',
+        'documento_nombre',
+        'usuario',
+        'documento_tipo',
+        'fecha_ingreso'
+    )
+    search_fields = (
+        'documento_nombre',
+        'usuario__nombre_usuario',
+    )
     list_filter = ('documento_tipo', 'fecha_ingreso')
     ordering = ('fecha_ingreso',)
