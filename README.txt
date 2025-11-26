@@ -1,36 +1,40 @@
 EV3
 
+
 info general:
 
 SUPERUSER (django):
 Usuario: inacap
 Contraseña: inacap123
+
 ------------------------------------------------
 
 LOGIN (usuarios para probar)
 
 (usuario admin)
-Usuario: Inacap
+Usuario: inacap
 Contraseña: 1234
 
 
 (usuarios normales(?)
-Usuario: pedro.perez o pedro.p@gmail.om
+Usuario: pedro.perez o pedro@gmail.om
 Contraseña: 1234
 
 Usuario: juan.perez o juan@gmail.com
 Contraseña: 1234
 
 
+-----------------------------------------------
 ------------------------------------------------
 
-REQUISITOS:
+REQUISITOS PREVIOS:
 
 Python 3.12 o superior
 pip (administrador de paquetes de Python)
 Git
-Virtualenv (opcional pero recomendado)
-Docker Desktop 
+Virtualenv 
+Docker Desktop (Windows) / Docker Engine (Linux)
+Django 5.1.4 o superior (se instalará automáticamente desde requirements.txt)
 
 
 
@@ -38,15 +42,16 @@ Docker Desktop
 
 CLONAR REPOSITORIO:
 
-1. Crea una carpeta donde guardarás el proyecto
+1. Crea una carpeta para el proyecto
 
 Abre una terminal y accede a la carpeta creada, luego ejecuta:
-git clone https://github.com/kiuiwi/nuam2
 
+git clone https://github.com/kiuiwi/nuam2
 cd nuam
 
 
-2. Crear y activar entorno virtual 
+
+2. Crear y activar entorno virtual  (venv)
 Desde la misma carpeta del proyecto "nuam", ejecuta:
 
 Linux/Mac:
@@ -58,16 +63,11 @@ python -m venv venv
 venv\Scripts\activate
 
 
+--------------------------------------------------
 
-3. Instalar Django
-pip install Django
+INSTALACION DE DEPENDENCIAS DE PYTHON:
 
-
-Verificar versión:
-django-admin --version
-(debiese ser igual o superior a la 5.1.4)
-
-
+pip install -r requirements.txt
 
 
 ---------------------------------------------------
@@ -77,41 +77,53 @@ django-admin --version
 LEVANTAR DOCKER Y PULSAR
 
 
-1. Instalar Docker Desktop (Windows/Mac) o Docker Engine (Linux).
+1. Instalar Docker
+
+Instala según tu sistema operativo:
+Windows / Mac: Docker Desktop
+Linux: Docker Engine
+
+
 
 2. Abrir Docker Desktop
+Asegurate de que Docker esté ejecutandose
 
 
-Si no tienes un contenedor Pulsar creado aun:
-Levantar un contenedor Pulsar usando la imagen oficial. Esto se hace una sola vez:
+3. Crear contenedor Pulsar (solo la primera vez)
 
-docker run -d --name pulsar-standalone -p 6650:6650 -p 8080:8080 apachepulsar/pulsar:lat
+(Abre una terminal)
 
-
-
-3. Verificar que esté corriendo 
-En Docker Desktop deberia aparecer "Status: Running")
-
-
-
-(abre una terminal)
-
-4. Verificar contenedores exitentes:
-docker ps -a
+Windows/Linux:
+docker run -d --name pulsar-standalone -p 6650:6650 -p 8080:8080 apachepulsar/pulsar:latest bin/pulsar standalone
 
 
 
-5. Iniciar contenedor pulsar:
+(
+********************
+Si el contenedor aparece como "Exited", eliminarlo:
+docker rm pulsar-standalone
+
+
+Y volver a ejecutar el comando anterior.
+
+********************
+)
+
+
+
+4. Verificar contenedor
+
+Listar contenedores:
+docker ps -a 
+
+Si está apagado:
 docker start pulsar-standalone
 
-o desde Docker desktop colocar "Run"
 
-
-
-6. Verificar que esté corriendo:
+Verificar:
 docker ps
 
-(debe mostrar "Up")
+(debe mostrar "up")
 
 
 
@@ -119,12 +131,11 @@ docker ps
 
 
 
----------------
-
+------------------------------------------
 
 LEVANTAR DJANGO
 
-en otra terminal desde la carpeta nuam, ejecuta
+en otra terminal, dentro de la carpeta nuam, ejecuta
 
 Windows:
 python manage.py runserver
@@ -133,10 +144,10 @@ Linux/Mac:
 python3 manage.py runserver
 
 
----------------
 
+------------------------------------------
 
-EJECUTAR EL CONSUMIDOR:
+EJECUTAR EL CONSUMIDOR (opcional):
 
 En otra terminal, corre:
 
@@ -144,8 +155,10 @@ python consumer.py
 
 
 
-(-Debe ejecutarse en otra terminal para no detener el servidor Django.
--Los mensajes enviados desde publish_event() aparecerán en consola y en la base de datos.)
+(
+-Debe ejecutarse en otra terminal para no detener el servidor Django.
+-Los mensajes enviados desde publish_event() aparecerán en consola y en la base de datos.
+)
 
 Explicación: escucha el topic eventos-nuam y guarda eventos en Django (EventoLog)
 Los mensajes se guardan en la tabla EventoLog.
@@ -153,6 +166,30 @@ Puedes verlos desde tu admin de Django (/admin) o con python manage.py shell:
 
 
 
+------------------------------------
+
+VERIFICAR MENSAJES MANUALES EN PULSAR
+
+docker exec -it pulsar-standalone bin/pulsar-client consume -s prueba1 -n 0 persistent://public/default/eventos-nuam
+
+
+-s prueba1  →  nombre de la suscripción
+-n 0  →  consume todos los mensajes del topic
+persistent://public/default/eventos-nuam  →  topic
+
+
+
+Salida esperada:
+"Subscribed to topic on localhost/127.0.0.1:6650 -- consumer: 0"
+
+
+Indica que el consumidor está escuchando correctamente.
+
+
+
+---------------------------------------------
+
+Funcionamiento interno:
 
 Productor: pulsar_client.py:
 
@@ -174,50 +211,24 @@ Confirma a Pulsar que el mensaje fue recibido (acknowledge).
 
 
 
-----
-
-Verificación de mensajes en Pulsar:
-Consumir mensajes manualmente:
-
-docker exec -it pulsar-standalone bin/pulsar-client consume -s prueba1 -n 0 persistent://public/default/eventos-nuam
-
--s prueba1 → nombre de la suscripción
--n 0 → consume todos los mensajes del topic
-persistent://public/default/eventos-nuam → topic
-
-
-
-Salida esperada:
-"Subscribed to topic on localhost/127.0.0.1:6650 -- consumer: 0"
-
-
-Indica que el consumidor está escuchando correctamente.
-
-
-
-
-
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
 
-
-API externa    ->   Mindicador
+API EXTERNA    ->   Mindicador
 
 Esta función obtiene indicadores económicos desde la API pública de Mindicador, 
 como la TPM (Tasa Política Monetaria) y tasas de conversión CLP → PEN / CLP → COP.
 
 
+
 Endpoint utilizado
 
 URL: https://mindicador.cl/api
-
 Método: GET
-
 Respuesta: JSON con los indicadores.
 
 
-----
 
 Salida de la función:
 
@@ -229,13 +240,10 @@ error_api	Mensaje de error si falla la consulta.
 
 
 
-
 ---------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
-
-
-API interna:
+API INTERNA
 
 
 Endpoints reales de la API interna como JSON 
@@ -248,11 +256,9 @@ http://localhost:8000/api/logs/
 
 
 
-
 Swagger UI: 
 interfaz web interactiva para explorar API REST
 http://localhost:8000/swagger/
-
 
 
 
@@ -280,9 +286,9 @@ HTTPS (?)
 
 
 
-************************************************************************************************
-************************************************************************************************
 
+************************************************************************************************
+************************************************************************************************
 
 
 PAUTA:
@@ -300,6 +306,36 @@ Certificados Digitales: Sistema completo de rotación y renovación automática
 Manejo de Errores: Sistema proactivo con alertas y recuperación automática 
 
 Logging y Monitoreo: Monitoreo en tiempo real con dashboards ✅
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

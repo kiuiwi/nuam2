@@ -2,7 +2,9 @@ from django.contrib import admin
 from .models import (
     UsuarioTipo, Pais, Region,
     Usuario, Persona,
-    DocumentoTipo, Documento
+    DocumentoTipo, Documento,
+    EventoLog
+
 )
 
 
@@ -105,3 +107,21 @@ class DocumentoAdmin(admin.ModelAdmin):
     )
     list_filter = ('documento_tipo', 'fecha_ingreso')
     ordering = ('fecha_ingreso',)
+
+
+# ADMIN EventoLog
+@admin.register(EventoLog)
+class EventoLogAdmin(admin.ModelAdmin):
+    list_display = ('fecha', 'tipo', 'mensaje', 'get_icon', 'get_color')
+    search_fields = ('mensaje', 'tipo')
+    list_filter = ('tipo', 'fecha')
+    ordering = ('-fecha',)
+
+    # Para mostrar los íconos en la lista del admin
+    def get_icon(self, obj):
+        return obj.get_icon()
+    get_icon.short_description = 'Icono'
+
+    def get_color(self, obj):
+        return obj.get_color()
+    get_color.short_description = 'Color'

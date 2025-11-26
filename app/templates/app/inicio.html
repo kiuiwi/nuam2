@@ -11,34 +11,41 @@
 
   <div class="container">
 
-
     <div style="text-align:center; margin-bottom: 20px;">
       <img src="{% static 'app/nuam_HD.png' %}" style="height: 40px;">
     </div>
 
-
     <h1 class="titulo" style="text-align:center;">Bienvenido a NUAM</h1>
 
-
     <div class="Form">
-  <h3>Selecciona una opción:</h3>
-  <hr>
-  <div class="menu" style="text-align:center;">
-    <a href="{% url 'login' %}" class="btn">Iniciar sesión</a>
-  </div>
-</div>
+      <h3>Selecciona una opción:</h3>
+      <hr>
+      <div class="menu" style="text-align:center;">
 
+        {% if request.session.usuario_id %}
+            {% if request.session.tipo == "Administrador" %}
+                <a href="{% url 'menu_admin' %}" class="btn">Ir al Menú Administrador</a>
+            {% else %}
+                <a href="{% url 'menu_usuario' %}" class="btn">Ir al Menú Usuario</a>
+            {% endif %}
+
+            
+            <a href="{% url 'logout' %}" class="btn" style="background:#c0392b;">Cerrar sesión</a>
+
+        {% else %}
+            <a href="{% url 'login' %}" class="btn" >Iniciar sesión</a>
+        {% endif %}
+
+      </div>
+    </div>
 
     <br>
-
 
     {% if error_api %}
       <p style="color:red; text-align:center;"><strong>{{ error_api }}</strong></p>
     {% endif %}
 
-
- 
-    <!--Indicadores Economicos-->
+    <!--Indicadores Económicos-->
     <div class="Form">
       <h3>Indicadores Económicos (API Mindicador)</h3>
       <hr>

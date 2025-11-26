@@ -1,0 +1,6 @@
+Django==5.0.2
+djangorestframework==3.15.1
+drf-yasg==1.21.7
+pulsar-client==3.5.0
+requests==2.32.3
+python-dotenv==1.0.1

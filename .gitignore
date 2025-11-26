@@ -1,12 +1,29 @@
+
 #archivos compilados de Python
 *.pyc
 __pycache__/
 
 
-#entorno virtual
+# IDEs
+.vscode/  
+
+
+# Virtual environments 
 venv/
 env/
-.venv/
 
-#archivos de configuración de IDEs
-.vscode/  
+# Env files 
+*.env
+.env.*
+
+
+#Certificates
+*.key
+*.crt
+*.pem
+*.p12
+certs/
+nginx/*.key
+nginx/*.crt
+nginx/*.p12
+

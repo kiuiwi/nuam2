@@ -1,12 +1,12 @@
 <h2>Eventos del sistema</h2>
 
 <style>
-    .log-row {
-        font-size: 18px;
-    }
-    .color-login { color: gray; font-weight: bold; }
-    .color-usuario { color: orange; font-weight: bold; }
-    .color-documento { color: blue; font-weight: bold; }
+    .log-row { font-size: 18px; }
+
+    /* Colores por tipo */
+    .tipo-usuario { color: orange; font-weight: bold; }
+    .tipo-documento { color: blue; font-weight: bold; }
+    .tipo-login { color: gray; font-weight: bold; }
 </style>
 
 <table id="logsTable" border="1" cellpadding="8">
@@ -19,21 +19,7 @@
     {% for log in logs %}
     <tr class="log-row">
         <td>{{ log.fecha|date:"d/m/Y H:i:s" }}</td>
-        <td class="
-            {% if log.tipo == 'Login' %}color-login{% elif log.tipo == 'Usuario' %}color-usuario{% elif log.tipo == 'Documento' %}color-documento{% else %}color-login{% endif %}
-        ">
-            {% comment %} El icono se decide por mensaje {% endcomment %}
-            {% if 'creado' in log.mensaje|lower or 'inicio' in log.mensaje|lower %}
-                🟢
-            {% elif 'editado' in log.mensaje|lower %}
-                🟠
-            {% elif 'eliminado' in log.mensaje|lower or 'fallido' in log.mensaje|lower %}
-                🔴
-            {% else %}
-                ⚪
-            {% endif %}
-            {{ log.tipo }}
-        </td>
+        <td class="tipo-{{ log.tipo|lower }}">{{ log.tipo }}</td>
         <td>{{ log.mensaje }}</td>
     </tr>
     {% endfor %}
@@ -66,37 +52,42 @@ function cargarLogs() {
             `;
 
             data.forEach(log => {
-                let colorClass = "color-login"; // letra
-                switch(log.tipo) {
-                    case "Login": colorClass = "color-login"; break;
-                    case "Usuario": colorClass = "color-usuario"; break;
-                    case "Documento": colorClass = "color-documento"; break;
-                }
 
-                // Icono según acción detectada en el mensaje
-                const msg = log.mensaje.toLowerCase();
-                let icon = "⚪"; 
-                if (msg.includes("creado") || msg.includes("inicio")) icon = "🟢";
-                else if (msg.includes("editado")) icon = "🟠";
-                else if (msg.includes("eliminado") || msg.includes("fallido")) icon = "🔴";
+                /* ============================
+                   DETERMINAR COLOR POR TIPO
+                   ============================ */
+                let tipo = log.tipo.toLowerCase();
+                let tipoClass = "tipo-login"; // default gris
+
+                if (tipo.includes("usuario")) tipoClass = "tipo-usuario";
+                else if (tipo.includes("documento")) tipoClass = "tipo-documento";
+                else tipoClass = "tipo-login";
+
+                /* ============================
+                   DETERMINAR ICONO POR ACCIÓN
+                   ============================ */
+                let msg = log.mensaje.toLowerCase();
+                let icon = "⚪"; // default
+
+                if (msg.includes("creado") || msg.includes("inicio de sesión exitoso") || msg.includes("ingres"))
+                    icon = "🟢";
+                else if (msg.includes("editado"))
+                    icon = "🟠";
+                else if (msg.includes("eliminado") || msg.includes("fallido"))
+                    icon = "🔴";
 
                 html += `
                     <tr class="log-row">
                         <td>${formatDate(log.fecha)}</td>
-                        <td class="${colorClass}">${icon} ${log.tipo}</td>
+                        <td class="${tipoClass}">${icon} ${log.tipo}</td>
                         <td>${log.mensaje}</td>
                     </tr>
                 `;
             });
 
             table.innerHTML = html;
-        })
-        .catch(err => console.error("Error al cargar logs:", err));
+        });
 }
 
-// Refrescar cada 3 segundos
 setInterval(cargarLogs, 3000);
-
-// Cargar al abrir la página
-cargarLogs();
 </script>

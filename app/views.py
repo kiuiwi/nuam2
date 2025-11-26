@@ -14,7 +14,8 @@ from .models import Usuario, Persona, Documento, EventoLog
 from .forms import UsuarioForm, PersonaForm, DocumentoForm
 
 from django.contrib.auth import authenticate, login as django_login
-
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 
 
 #API MINDICADOR
@@ -186,13 +187,22 @@ def crear_documento(request):
 
         if form.is_valid():
             doc = form.save()
-            publish_event(f"Documento creado: {doc.id_documento} - {doc.documento_nombre}")
+            mensaje = f"Documento creado: {doc.id_documento} - {doc.documento_nombre}"
+
+            publish_event(mensaje)
+
+            EventoLog.objects.create(
+                tipo="Documento",
+                mensaje=mensaje
+            )
+
             return redirect("lista_documentos")
 
     else:
         form = DocumentoForm()
 
     return render(request, "documentos/crear_documento.html", {"form": form})
+
 
 
 def editar_documento(request, documento_id):
@@ -203,7 +213,15 @@ def editar_documento(request, documento_id):
 
         if form.is_valid():
             doc = form.save()
-            publish_event(f"Documento editado: {doc.id_documento} - {doc.documento_nombre}")
+            mensaje = f"Documento editado: {doc.id_documento} - {doc.documento_nombre}"
+
+            publish_event(mensaje)
+
+            EventoLog.objects.create(
+                tipo="Documento",
+                mensaje=mensaje
+            )
+
             return redirect("lista_documentos")
 
     else:
@@ -212,15 +230,25 @@ def editar_documento(request, documento_id):
     return render(request, "documentos/editar_documento.html", {"form": form})
 
 
+
 def eliminar_documento(request, documento_id):
     documento = get_object_or_404(Documento, id_documento=documento_id)
 
     if request.method == "POST":
-        publish_event(f"Documento eliminado: {documento.id_documento} - {documento.documento_nombre}")
+        mensaje = f"Documento eliminado: {documento.id_documento} - {documento.documento_nombre}"
+
+        publish_event(mensaje)
+
+        EventoLog.objects.create(
+            tipo="Documento",
+            mensaje=mensaje
+        )
+
         documento.delete()
         return redirect("lista_documentos")
 
     return render(request, "documentos/eliminar_documento.html", {"documento": documento})
+
 
 
 
@@ -331,8 +359,9 @@ def menu_admin(request):
 
 
 
+
 def menu_usuario(request):
-    if "usuario_id" not in request.session:
+    if request.session.get("tipo") != "Usuario":
         return redirect("login")
 
     context = obtener_indicadores()
