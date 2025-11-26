@@ -233,7 +233,7 @@ def lista_logs(request):
 
 
 def api_logs(request):
-    logs = EventoLog.objects.order_by('-fecha')[:20]
+    logs = EventoLog.objects.order_by('-fecha')
     data = [model_to_dict(log) for log in logs]
     return JsonResponse(data, safe=False)
 
@@ -366,3 +366,6 @@ def logout_view(request):
 
     request.session.flush()
     return redirect("login")
+
+
+

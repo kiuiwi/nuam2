@@ -4,10 +4,9 @@
     .log-row {
         font-size: 18px;
     }
-    .green { color: green; font-weight: bold; }
-    .orange { color: orange; font-weight: bold; }
-    .red { color: red; font-weight: bold; }
-    .gray { color: gray; font-weight: bold; }
+    .color-login { color: gray; font-weight: bold; }
+    .color-usuario { color: orange; font-weight: bold; }
+    .color-documento { color: blue; font-weight: bold; }
 </style>
 
 <table id="logsTable" border="1" cellpadding="8">
@@ -20,7 +19,21 @@
     {% for log in logs %}
     <tr class="log-row">
         <td>{{ log.fecha|date:"d/m/Y H:i:s" }}</td>
-        <td class="{{ log.get_color }}">{{ log.get_icon }} {{ log.tipo }}</td>
+        <td class="
+            {% if log.tipo == 'Login' %}color-login{% elif log.tipo == 'Usuario' %}color-usuario{% elif log.tipo == 'Documento' %}color-documento{% else %}color-login{% endif %}
+        ">
+            {% comment %} El icono se decide por mensaje {% endcomment %}
+            {% if 'creado' in log.mensaje|lower or 'inicio' in log.mensaje|lower %}
+                🟢
+            {% elif 'editado' in log.mensaje|lower %}
+                🟠
+            {% elif 'eliminado' in log.mensaje|lower or 'fallido' in log.mensaje|lower %}
+                🔴
+            {% else %}
+                ⚪
+            {% endif %}
+            {{ log.tipo }}
+        </td>
         <td>{{ log.mensaje }}</td>
     </tr>
     {% endfor %}
@@ -53,33 +66,37 @@ function cargarLogs() {
             `;
 
             data.forEach(log => {
-                let color = "gray";
-                let icon = "⚪";
-                const msg = log.mensaje.toLowerCase();
-
-                if (msg.includes("creado")) { color = "green"; icon = "🟢"; }
-                else if (msg.includes("editado")) { color = "orange"; icon = "🟠"; }
-                else if (msg.includes("eliminado")) { color = "red"; icon = "🔴"; }
-                else if (msg.includes("inicio") || msg.includes("login")) {
-                    color = "green"; icon = "🟢";
-                } 
-                else if (msg.includes("cierre") || msg.includes("logout")) {
-                    color = "gray"; icon = "⚪";
+                let colorClass = "color-login"; // letra
+                switch(log.tipo) {
+                    case "Login": colorClass = "color-login"; break;
+                    case "Usuario": colorClass = "color-usuario"; break;
+                    case "Documento": colorClass = "color-documento"; break;
                 }
+
+                // Icono según acción detectada en el mensaje
+                const msg = log.mensaje.toLowerCase();
+                let icon = "⚪"; 
+                if (msg.includes("creado") || msg.includes("inicio")) icon = "🟢";
+                else if (msg.includes("editado")) icon = "🟠";
+                else if (msg.includes("eliminado") || msg.includes("fallido")) icon = "🔴";
 
                 html += `
                     <tr class="log-row">
                         <td>${formatDate(log.fecha)}</td>
-                        <td class="${color}">${icon} ${log.tipo}</td>
+                        <td class="${colorClass}">${icon} ${log.tipo}</td>
                         <td>${log.mensaje}</td>
                     </tr>
                 `;
             });
 
             table.innerHTML = html;
-        });
+        })
+        .catch(err => console.error("Error al cargar logs:", err));
 }
 
 // Refrescar cada 3 segundos
 setInterval(cargarLogs, 3000);
+
+// Cargar al abrir la página
+cargarLogs();
 </script>
