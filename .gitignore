@@ -22,8 +22,5 @@ env/
 *.crt
 *.pem
 *.p12
-certs/
-nginx/*.key
-nginx/*.crt
-nginx/*.p12
+
 

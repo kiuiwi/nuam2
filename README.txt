@@ -93,7 +93,7 @@ Asegurate de que Docker esté ejecutandose
 
 (Abre una terminal)
 
-Windows/Linux:
+Windows:
 docker run -d --name pulsar-standalone -p 6650:6650 -p 8080:8080 apachepulsar/pulsar:latest bin/pulsar standalone
 
 
