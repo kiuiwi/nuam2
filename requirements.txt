@@ -4,3 +4,7 @@ drf-yasg==1.21.7
 pulsar-client==3.5.0
 requests==2.32.3
 python-dotenv==1.0.1
+
+django-extensions
+werkzeug
+pyOpenSSL
