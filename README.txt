@@ -1,12 +1,10 @@
 EV3
 
-
 info general:
 
 SUPERUSER (django):
 Usuario: inacap
 Contraseña: inacap123
-
 ------------------------------------------------
 
 LOGIN (usuarios para probar)
@@ -24,7 +22,6 @@ Usuario: juan.perez o juan@gmail.com
 Contraseña: 1234
 
 
------------------------------------------------
 ------------------------------------------------
 
 REQUISITOS PREVIOS:
@@ -47,28 +44,31 @@ CLONAR REPOSITORIO:
 Abre una terminal y accede a la carpeta creada, luego ejecuta:
 
 git clone https://github.com/kiuiwi/nuam2
-cd nuam
+cd nuam2
 
 
 
 2. Crear y activar entorno virtual  (venv)
 Desde la misma carpeta del proyecto "nuam", ejecuta:
 
+Windows:
+python -m venv venv
+venv\Scripts\actívate
+
 Linux/Mac:
 python3 -m venv venv
 source venv/bin/activate
-
-Windows:
-python -m venv venv
-venv\Scripts\activate
 
 
 --------------------------------------------------
 
 INSTALACION DE DEPENDENCIAS DE PYTHON:
 
+Windows:
 pip install -r requirements.txt
 
+Linux:
+pip3 install -r requirements.txt
 
 ---------------------------------------------------
 ---------------------------------------------------
@@ -80,7 +80,7 @@ LEVANTAR DOCKER Y PULSAR
 1. Instalar Docker
 
 Instala según tu sistema operativo:
-Windows / Mac: Docker Desktop
+Windows / Mac: Docker Desktop 
 Linux: Docker Engine
 
 
@@ -93,21 +93,17 @@ Asegurate de que Docker esté ejecutandose
 
 (Abre una terminal)
 
-Windows:
+Windows/Linux:
 docker run -d --name pulsar-standalone -p 6650:6650 -p 8080:8080 apachepulsar/pulsar:latest bin/pulsar standalone
 
 
-
-(
 ********************
 Si el contenedor aparece como "Exited", eliminarlo:
 docker rm pulsar-standalone
 
-
-Y volver a ejecutar el comando anterior.
-
+Y volver a ejecutar el comando anterior (paso 3).
 ********************
-)
+
 
 
 
@@ -155,10 +151,10 @@ python consumer.py
 
 
 
-(
+
 -Debe ejecutarse en otra terminal para no detener el servidor Django.
 -Los mensajes enviados desde publish_event() aparecerán en consola y en la base de datos.
-)
+
 
 Explicación: escucha el topic eventos-nuam y guarda eventos en Django (EventoLog)
 Los mensajes se guardan en la tabla EventoLog.
@@ -215,6 +211,7 @@ Confirma a Pulsar que el mensaje fue recibido (acknowledge).
 ----------------------------------------------------------------------------------------
 
 
+
 API EXTERNA    ->   Mindicador
 
 Esta función obtiene indicadores económicos desde la API pública de Mindicador, 
@@ -236,6 +233,7 @@ tpm_actual	Valor de la TPM actual.
 tc_clp_pen	Tipo de cambio CLP → PEN calculado.
 tc_clp_cop	Tipo de cambio CLP → COP calculado.
 error_api	Mensaje de error si falla la consulta.
+
 
 
 
@@ -267,22 +265,61 @@ http://localhost:8000/swagger/
 -----------------------------------------------------------------------
 
 CERTIFICADOS
-pkcs12
+
+Certificados SSL/TLS
+Certificados utilizados en el proyecto
+
+Certificado: nuam.crt
+Clave privada: nuam.key
+Ubicación: Carpeta certificados/ dentro del proyecto.
+Tipo: Auto-firmado (self-signed) para entorno de desarrollo.
+
+Generación: Se creó con OpenSSL dentro de la carpeta del proyecto.
 
 
+Archivos adicionales:
 
+certificate.crt (opcional)
+private.key
+request.csr (solicitud de firma de certificado)
 
 
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 
-HTTPS (?)
+HTTPS 
+
+Configuración de HTTPS en el proyecto
+
+1. Certificados utilizados
+
+Certificado: nuam.crt
+
+Clave privada: nuam.key
+
+Ubicación: Carpeta certificados/ dentro del proyecto.
+
+Tipo: Auto-firmado (self-signed) para entorno de desarrollo.
+
+Nota: Este certificado no está emitido por una autoridad confiable, por lo que los navegadores mostrarán advertencias de seguridad.
 
 
+2. Ejecución del servidor con HTTPS
+Para levantar el servidor de Django usando HTTPS, se utiliza el comando:
+
+Windows:
+python manage.py runserver_plus --cert-file certificados/nuam.crt --key-file certificados/nuam.key
+
+Linux / Mac:
+python3 manage.py runserver_plus --cert-file certificados/nuam.crt --key-file certificados/nuam.key
 
 
+Esto levanta el servidor en https://127.0.0.1:8000/.
 
+Se recomienda usar Chrome o Firefox para pruebas; ambos mostrarán advertencias debido al certificado auto-firmado.
+
+El comando utiliza django-extensions (runserver_plus) para habilitar HTTPS en desarrollo.
 
 
 
@@ -306,36 +343,6 @@ Certificados Digitales: Sistema completo de rotación y renovación automática
 Manejo de Errores: Sistema proactivo con alertas y recuperación automática 
 
 Logging y Monitoreo: Monitoreo en tiempo real con dashboards ✅
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
