@@ -1,321 +1,516 @@
 🟦 NUAM — Sistema de Gestión de Documentos y Usuarios con Django + Pulsar
 
-📌 1. Introducción
+🧩 Descripción del Proyecto
+⦁	NUAM es un sistema de gestión documental y de usuarios que integra:
+⦁	CRUD de Usuarios
+⦁	CRUD de Personas asociadas
+⦁	CRUD de Documentos (con subida de archivos)
+⦁	Sistema de Login con roles (Administrador / Usuario)
+⦁	Registro detallado de eventos
+⦁	Envío de eventos en tiempo real mediante Apache Pulsar
+⦁	API REST completa mediante Django REST Framework
+⦁	Visualización de indicadores económicos (API mindicador.cl)
+⦁	Soporte para HTTPS local mediante certificado generado
+⦁	Este proyecto está desarrollado en Django, sin base de datos externa adicional (solo modelo Django).
 
-NUAM es un sistema de gestión documental diseñado como proyecto TI.
-Permite administrar usuarios, personas y documentos, integrando:
 
-Django
 
-Django REST Framework
+🏗 Arquitectura General
+┌──────────────────────────┐
+│        Usuario           │
+└───────────────┬──────────┘
+		│
+		 Peticiones HTTPS
+		│
+┌───────────────▼──────────────┐
+│            Django            │
+│ - CRUD Usuarios/Personas     │
+│ - CRUD Documentos            │
+│ - Login y Roles              │
+│ - API REST                   │
+└───────────────┬──────────────┘
+		│
+		 publish_event() (Producer)
+		│
+┌───────────────▼──────────────┐
+│       Apache Pulsar          │
+│        (Docker)              │
+└───────────────┬──────────────┘
+		│
+     	   Consumer.py        
+     	Guarda logs en BD     
 
-Apache Pulsar (mensajería)
 
-Docker
 
-HTTPS (certificado local)
+⚙️ Tecnologías Utilizadas
 
-Logs de eventos
-
-API interna + API externa (mindicador.cl)
-
-El proyecto funciona sin base de datos externa, utilizando el modelo de datos propio de Django con SQLite por defecto.
-
-📌 2. Arquitectura General
-┌────────────────────┐       ┌─────────────────────┐
-│        Django       │ <---> │   API REST (DRF)     │
-│ CRUD + Auth + Logs │       └─────────────────────┘
-│                    │
-│ Produces eventos → │ Pulsar Producer
-└────────────────────┘
-         │
-         ▼
-   Pulsar (Docker)
-         │
-         ▼
-┌─────────────────────┐
-│   Consumer.py       │
-│ Guarda logs en BD   │
-└─────────────────────┘
-
-📌 3. Tecnologías principales
 Tecnología	Uso
-Django	Lógica principal del sistema
-Django REST Framework	API REST automática con ViewSets
-Pulsar	Envío de eventos del sistema
-Docker	Ejecución de broker Pulsar
-HTTPS (cert.pem + key.pem)	Seguridad del proyecto
-SQLite	Base de datos interna por defecto
-requests	Consumo API mindicador.cl
+Python 3.12	Lenguaje principal
+Django 5	Backend, views, modelos, sesiones
+Django REST Framework	API REST
+Apache Pulsar	Mensajería en tiempo real
+Docker	Contenedor de Pulsar
+Bootstrap	Estilos del frontend
+HTTPS	Certificados locales (cert.pem, key.pem)
+API mindicador.cl	Datos económicos actualizados
 
-📌 4. Estructura del Proyecto
-nuam2/
-│── nuam2/
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── asgi.py
-│
-│── app/
-│   ├── models.py
-│   ├── views.py
-│   ├── forms.py
-│   ├── urls.py
-│   ├── consumer.py
-│   └── utils/
-│       └── pulsar_client.py
-│
-│── templates/
-│── static/
-│── cert.pem
-│── key.pem
-│── manage.py
 
-📌 5. Modelos del Sistema
-Usuario
 
-username
+⚙️ Requisitos previos:
 
-password
+Python 3.12 o superior
+pip (administrador de paquetes de Python)
+Git
+Virtualenv 
+Docker Desktop (Windows) / Docker Engine (Linux)
+Django 5.1.4 o superior (se instalará automáticamente desde requirements.txt)
 
-es_admin
 
-fecha_registro
+------------------------------------------------------------------
 
-Persona
 
-usuario (FK)
+🛠️ Instalación del Proyecto
 
-nombre
+1. Crea una carpeta para el proyecto
 
-apellido
 
-email
+2. Abre una terminal y accede a la carpeta creada, luego ejecuta:
 
-rut
+git clone https://github.com/kiuiwi/nuam2
+cd nuam2
 
-Documento
 
-titulo
+3. Crear y activar entorno virtual (venv):
+Desde la misma carpeta del proyecto "nuam2", ejecuta:
 
-descripcion
-
-archivo
-
-autor (FK Persona)
-
-fecha_subida
-
-EventoLog
-
-tipo_evento
-
-detalle
-
-fecha
-
-📌 6. CRUD Implementados
-✔️ CRUD de Usuarios
-
-Crear / Editar / Eliminar
-
-Relación automática con Persona
-
-Envío de evento a Pulsar
-
-Registro de logs en BD
-
-✔️ CRUD de Personas
-
-Asociada 1:1 al Usuario
-
-Validación de email y RUT
-
-Actualización desde HTML y API
-
-✔️ CRUD de Documentos
-
-Subida de archivo
-
-Filtros por texto y tipo
-
-Tabla con acciones Editar / Eliminar
-
-Evento Pulsar al crear o eliminar
-
-Registro en EventoLog
-
-📌 7. Autenticación del Sistema
-
-El sistema soporta múltiples formas de acceso:
-
-🔹 Login por Usuario
-
-Login normal con username + password.
-
-🔹 Login por Persona (email)
-
-Se revisa la tabla Persona:
-si coincide, se autentica contra el Usuario asociado.
-
-🔹 Login desde Django Admin
-
-Con usuario admin.
-
-📌 8. API REST del Proyecto
-
-Los endpoints se generan automáticamente gracias a ModelViewSet.
-
-🔹 Usuarios
-GET    /api/usuarios/
-POST   /api/usuarios/
-GET    /api/usuarios/{id}/
-PUT    /api/usuarios/{id}/
-DELETE /api/usuarios/{id}/
-
-🔹 Personas
-GET    /api/personas/
-POST   /api/personas/
-GET    /api/personas/{id}/
-PUT    /api/personas/{id}/
-DELETE /api/personas/{id}/
-
-🔹 Documentos
-GET    /api/documentos/
-POST   /api/documentos/
-GET    /api/documentos/{id}/
-PUT    /api/documentos/{id}/
-DELETE /api/documentos/{id}/
-
-🔹 Logs
-GET /api/logs/
-
-📌 9. Pulsar — Productor y Consumidor
-Productor (integrado en Django)
-
-Cada vez que ocurre un evento:
-
-Creación de Usuario
-
-Eliminación
-
-Subida de documento
-
-Login
-
-Error
-
-Acción del CRUD
-
-Se ejecuta:
-
-publish_event("usuario_creado", {"id": usuario.id})
-
-Consumer.py (independiente)
-
-Se ejecuta en otra terminal:
-
-python consumer.py
-
-
-Su tarea:
-
-Leer mensajes del tópico
-
-Interpretarlos
-
-Guardar en EventoLog
-
-📌 10. Docker — Levantar Pulsar
-Crear contenedor Pulsar (solo una vez):
-docker run -d --name pulsar-standalone -p 6650:6650 -p 8080:8080 apachepulsar/pulsar-standalone
-
-Iniciar si ya existe:
-docker start pulsar-standalone
-
-📌 11. HTTPS — Ejecución del Proyecto
-
-Django se ejecuta con:
-
-python manage.py runserver_plus --cert-file cert.pem --key-file key.pem
-
-
-Esto permite:
-
-Navegación con https://localhost:8000
-
-Formularios seguros
-
-Login seguro
-
-Envío de archivos sin advertencias del navegador
-
-📌 12. API Externa — mindicador.cl
-
-Se consume la API oficial para mostrar:
-
-UF
-
-Dólar
-
-Euro
-
-IPC
-
-UTM
-
-El sistema maneja:
-
-Errores de conexión
-
-Datos inválidos
-
-Retorno alternativo si la API cae
-
-📌 13. Instalación y Ejecución
-1️⃣ Clonar repositorio
-git clone https://github.com/tu_usuario/NUAM.git
-cd NUAM
-
-2️⃣ Crear entorno virtual
+Windows:
 python -m venv venv
-source venv/bin/activate   # Linux
-venv\Scripts\activate      # Windows
+venv\Scripts\activate
 
-3️⃣ Instalar dependencias
+Linux/Mac:
+python3 -m venv venv
+source venv/bin/actívate
+
+
+4. Instala las dependencias de Python:
+Windows:
 pip install -r requirements.txt
 
-4️⃣ Levantar Docker + Pulsar
-docker start pulsar-standalone
+Linux:
+pip3 install -r requirements.txt
 
-5️⃣ Ejecutar Django con HTTPS
+
+
+🔐 Ejecución del Servidor Django con HTTPS
+El proyecto se ejecuta usando:
 python manage.py runserver_plus --cert-file cert.pem --key-file key.pem
 
-6️⃣ Ejecutar consumer (otra terminal)
-python consumer.py
+Si no existen, generar certificados:
+openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes
 
-📌 14. Problemas comunes y soluciones
-❗ “pulsar-client no responde”
 
-Asegurarse que Docker está encendido
 
-Verificar que el contenedor se inició correctamente
+🐳 Levantamiento de Apache Pulsar con Docker
 
+1. Instalar Docker
+Instala según tu sistema operativo:
+Windows / Mac: Docker Desktop 
+Linux: Docker Engine
+
+(en Windows abre Docker Desktop y asegúrate de que esté ejecutándose.
+
+
+2. Crear contenedor Pulsar (solo la primera vez):
+(Abre una terminal)
+
+Windows/Linux:
+docker run -d --name pulsar-standalone -p 6650:6650 -p 8080:8080 apachepulsar/pulsar:latest bin/pulsar standalone
+
+****************************************************
+Si el contenedor aparece como "Exited", eliminarlo:
+docker rm pulsar-standalone
+
+Y volver a ejecutar el comando anterior (paso 3).
+****************************************************
+
+
+4. Verificar contenedor
+Listar contenedores:
+docker ps -a 
+
+Si está apagado:
+docker start pulsar-standalone
+
+Verificar:
 docker ps
 
-❗ Error de certificados en Chrome
+(debe mostrar "up")
 
-Volver a instalar cert.pem en la CA local
 
-Reiniciar navegador
+(aquí ya se puede correr Django)
 
-❗ Formulario no sube archivo
 
-Revisar permisos en carpeta /media/
 
-📌 15. Créditos
+🐊 Levantar Django
 
-Proyecto desarrollado por:
-Camila Cruz, Alejandra Miranda y Sol Toledo.
+en otra terminal, dentro de la carpeta nuam, ejecuta
+
+Windows:
+python manage.py runserver
+
+Linux/Mac:
+python3 manage.py runserver
+
+
+
+👤 Login
+
+Usuario Admin
+Usuario: inacap
+Contraseña: 1234
+
+Usuario
+Usuario: juan.perez / juan@gmail.com
+Contraseña: 1234
+
+
+Superusuario Django
+Usuario: inacap
+Contraseña: inacap123
+
+
+
+🐳 Ejecutar Consumidor:
+
+En otra terminal, corre:
+
+python consumer.py
+
+
+-Debe ejecutarse en otra terminal para no detener el servidor Django.
+-Los mensajes enviados desde publish_event() aparecerán en consola y en la base de datos.
+
+Explicación: escucha el topic eventos-nuam y guarda eventos en Django (EventoLog)
+Los mensajes se guardan en la tabla EventoLog.
+Puedes verlos desde tu admin de Django (/admin) o con python manage.py shell:
+
+
+
+🐳 Verificar mensajes manuales en Pulsar
+En una terminal distinta a donde se esté ejecutando consumer.py, ejecuta:
+
+docker exec -it pulsar-standalone bin/pulsar-client consume -s prueba1 -n 0 persistent://public/default/eventos-nuam
+
+
+-s prueba1  →  nombre de la suscripción
+-n 0  →  consume todos los mensajes del topic
+persistent://public/default/eventos-nuam  →  topic
+
+
+Salida esperada:
+"Subscribed to topic on localhost/127.0.0.1:6650 -- consumer: 0"
+
+Indica que el consumidor está escuchando correctamente.
+
+
+Funcionamiento interno:
+
+Productor: pulsar_client.py:
+Se conecta al broker de Pulsar que corre en localhost:6650.
+Crea un productor para el topic eventos-nuam.
+La función publish_event(data) toma un string data y lo envía al topic.
+Cada vez que llames a publish_event("mensaje"), ese mensaje se envía a Pulsar.
+
+
+Consumidor: consumer.py:
+Configura Django para poder usar tus modelos (EventoLog).
+Se conecta a Pulsar y se suscribe al mismo topic eventos-nuam.
+Entra en un bucle infinito, escuchando mensajes.
+Cada vez que llega un mensaje:
+Lo imprime en consola (print("EVENTO RECIBIDO:", contenido)).
+Lo guarda en tu base de datos Django como un nuevo EventoLog.
+Confirma a Pulsar que el mensaje fue recibido (acknowledge).
+
+
+
+🔐 Certificados
+
+Certificados utilizados en el proyecto:
+Certificado: nuam.crt
+Clave privada: nuam.key
+Ubicación: Carpeta certificados/ dentro del proyecto.
+Tipo: Auto-firmado (self-signed) para entorno de desarrollo.
+Generación: Se creó con OpenSSL
+
+Nota: Este certificado no está emitido por una autoridad confiable, por lo que los navegadores mostrarán advertencias de seguridad.
+
+Archivos adicionales:
+certificate.crt
+private.key
+request.csr (solicitud de firma de certificado)
+
+
+
+🔐 HTTPS
+Para levantar el servidor de Django usando HTTPS, se utiliza el comando:
+
+Windows:
+python manage.py runserver_plus --cert-file certificados/nuam.crt --key-file certificados/nuam.key
+
+Linux / Mac:
+python3 manage.py runserver_plus --cert-file certificados/nuam.crt --key-file certificados/nuam.key
+
+
+Esto levanta el servidor en https://127.0.0.1:8000/.
+
+Se recomienda usar Chrome o Firefox para pruebas; ambos mostrarán advertencias debido al certificado auto-firmado.
+
+El comando utiliza django-extensions (runserver_plus) para habilitar HTTPS en desarrollo.
+
+
+
+---------------------------------------------------------------
+
+
+
+📡 Sistema de Logs + Pulsar
+Cada acción del sistema genera un evento:
+Login correcto
+Login fallido
+Crear usuario
+Editar usuario
+Eliminar usuario
+Crear documento
+Editar documento
+Eliminar documento
+Cierre de sesión
+
+1.	Envían a Pulsar (publish_event())
+2. El consumer.py los escucha
+3. Se guardan en EventoLog en la base de datos
+
+
+
+🌐 API REST (Django REST Framework)
+
+Expuesta mediante ViewSets:
+class UsuarioViewSet(viewsets.ModelViewSet)
+class PersonaViewSet(viewsets.ModelViewSet)
+class DocumentoViewSet(viewsets.ModelViewSet)
+class EventoLogViewSet(viewsets.ModelViewSet)
+
+
+Endpoints reales de la API interna como JSON
+(se puede acceder desde Menu admin):
+
+http://localhost:8000/api/usuarios/
+http://127.0.0.1:8000/api/personas/
+http://127.0.0.1:8000/api/documentos/
+http://localhost:8000/api/logs/
+
+
+Endpoints disponibles:
+Endpoint	Métodos	Descripción
+/api/usuarios/	GET, POST	CRUD usuarios
+/api/usuarios/<id>/	GET, PUT, DELETE	Operaciones sobre un usuario
+/api/personas/	CRUD	Personas
+/api/documentos/	CRUD	Documentos
+/api/eventolog/	CRUD	Logs generados
+
+
+Swagger UI: 
+interfaz web interactiva para explorar API REST
+http://localhost:8000/swagger/
+
+
+
+🌐 Integración con API Externa (mindicador.cl)
+
+Esta función obtiene indicadores económicos desde la API pública de Mindicador, 
+como la TPM (Tasa Política Monetaria) y tasas de conversión.
+La función obtener_indicadores() consulta:
+TPM actual
+Tipo de cambio CLP → PEN
+Tipo de cambio CLP → COP
+
+Se maneja:
+Timeout
+Errores de conexión
+Datos faltantes
+
+Los valores se muestran en:
+inicio.html
+menu_admin.html
+menu_usuario.html
+login.html
+
+Salida de la función:
+tpm_actual	Valor de la TPM actual.
+tc_clp_pen	Tipo de cambio CLP → PEN calculado.
+tc_clp_cop	Tipo de cambio CLP → COP calculado.
+error_api	Mensaje de error si falla la consulta.
+
+
+---------------------------------------------------------------
+
+
+📁 Estructura del Proyecto
+
+/nuam.
+|
+├── app
+│   ├── admin.py
+│   ├── api_views.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── serializers.py
+│   ├── static
+│   │   └── app
+│   │       ├── nuam_HD2.png
+│   │       ├── nuam_HD.png
+│   │       └── styles.css
+│   ├── templates
+│   │   ├── app
+│   │   │   ├── inicio.html
+│   │   │   ├── login.html
+│   │   │   ├── menu_admin.html
+│   │   │   └── menu_usuario.html
+│   │   ├── base.html
+│   │   ├── documentos
+│   │   │   ├── crear_documento.html
+│   │   │   ├── editar_documento.html
+│   │   │   ├── eliminar_documento.html
+│   │   │   └── lista_documentos.html
+│   │   ├── logs
+│   │   │   └── lista_logs.html
+│   │   ├── registro
+│   │   │   ├── crear_registro.html
+│   │   │   ├── editar_registro.html
+│   │   │   ├── eliminar_registro.html
+│   │   │   └── lista_registros.html
+│   │   └── usuarios
+│   │       ├── crear_usuario.html
+│   │       ├── eliminar_usuario.html
+│   │       └── lista_usuarios.html
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+│
+├── certificados
+│   ├── cert.crt
+│   ├── certificate.crt
+│   ├── cert.key
+│   ├── nuam.crt
+│   ├── nuam.key
+│   ├── private.key
+│   └── request.csr
+│
+├── consumer.py
+│
+├── db.sqlite3
+│
+├── documentos
+│   └── comprobante_depositos.txt
+│
+├── manage.py
+│
+├── nuam
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+│
+├── README.txt
+├── requirements.txt
+│
+└── utils
+    └── pulsar_client.py
+
+
+🗂 Estructura de Modelos (Modelo de Datos)
+El proyecto incluye:
+Usuario
+Persona
+Documento
+DocumentoTipo
+UsuarioTipo
+EventoLog (logs generados por Pulsar)
+
+El CRUD depende de estas relaciones:
+UsuarioTipo 1 ──── N Usuario
+Usuario 1 ──── 1 Persona
+DocumentoTipo 1 ──── N Documento
+Usuario 1 ──── N Documento
+
+
+
+👥 CRUD de Usuarios y Personas
+✔ Crear
+✔ Editar
+✔ Eliminar
+✔ Listar
+Al crear o editar un usuario:
+Se guarda el usuario con su Persona asociada.
+Se genera un evento Pulsar (publish_event()).
+Se registra un EventoLog en la base de datos.
+
+Flujo de creación
+Usuario + Persona enviados por POST
+Validación de formularios
+Guardado en DB
+Pulsar produce evento
+EventoLog guarda en DB
+Redirige a la lista
+Vistas incluidas:
+lista_registros
+crear_registro
+editar_registro
+eliminar_registro
+
+
+
+📄 CRUD de Documentos
+Funcionalidades:
+Subir archivo (request.FILES)
+Editar metadatos
+Eliminar documento
+Filtros (texto y tipo)
+Logs + eventos Pulsar
+
+Vistas:
+lista_documentos
+crear_documento
+editar_documento
+eliminar_documento
+
+Cada operación:
+✔ Envía evento al broker
+✔ Guarda EventoLog en la base de datos
+
+
+
+🔑 Autenticación y Perfiles de Usuario
+Sistema de login flexible:
+1.	Login desde tabla Usuario (username + password)
+2.	Login por email (tabla Persona)
+3.	Login del Administrador Django (authenticate())
+
+Roles:
+Administrador → acceso a menú admin
+Usuario → acceso a menú usuario
+
+Ambos almacenados en:
+request.session["tipo"]
+request.session["usuario_id"]
+
+
+
+
+✨ Autores:
+Nombres: Sol Toledo, Camila Cruz, Alejandra Miranda
 Carrera: Analista Programador
-Institución: INACAP
+Institución: Inacap
+Año: 2025
+
+
