@@ -253,6 +253,9 @@ Linux/Mac:
 python3 manage.py runserver
 ```
 
+<br>
+
+🔌 **Puerto por defecto:**   El servidor se levanta en:  http://localhost:8000  
 
 <br><br>
 
